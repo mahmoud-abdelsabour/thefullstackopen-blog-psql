@@ -1,6 +1,7 @@
 const logger = require('./logger')
 const jwt = require('jsonwebtoken')
 const Blog = require('../models/blog')
+const { SECRET } = require('./config')
 
 const blogFinder = async (req, res, next) => {
   req.blog = await Blog.findByPk(req.params.id)
@@ -41,6 +42,21 @@ const errorHandler = (error, request, response, next) => {
   next(error)
 }
 
+
+const tokenExtractor = (req, res, next) => {
+  const authorization = req.get('authorization')
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    try {
+      req.decodedToken = jwt.verify(authorization.substring(7), SECRET)
+    } catch{
+      return res.status(401).json({ error: 'token invalid' })
+    }
+  }  else {
+    return res.status(401).json({ error: 'token missing' })
+  }
+  next()
+}
+
 //const tokenExtractor = (request, response, next) => {
 //  const auth = request.get('authorization')
 //  request.token = auth && auth.startsWith('Bearer ')
@@ -59,6 +75,6 @@ const errorHandler = (error, request, response, next) => {
 //  next()
 //}
 
-const middleware = { requestLogger, unKnownEndpoint, errorHandler, blogFinder }
+const middleware = { requestLogger, unKnownEndpoint, errorHandler, blogFinder, tokenExtractor }
 
 module.exports = middleware
