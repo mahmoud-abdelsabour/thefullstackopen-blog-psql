@@ -1,7 +1,14 @@
-const { response } = require('../app')
 const logger = require('./logger')
 const jwt = require('jsonwebtoken')
-const User = require('../models/user')
+const Blog = require('../models/blog')
+
+const blogFinder = async (req, res, next) => {
+  req.blog = await Blog.findByPk(req.params.id)
+  if (!req.blog) {
+    return res.status(404).end()
+  }
+  next()
+}
 
 const requestLogger = (request, response, next) => {
   logger.info('Method:', request.method)
@@ -34,24 +41,24 @@ const errorHandler = (error, request, response, next) => {
   next(error)
 }
 
-const tokenExtractor = (request, response, next) => {
-  const auth = request.get('authorization')
-  request.token = auth && auth.startsWith('Bearer ')
-    ? auth.replace('Bearer ', '')
-    : null
-  next()
-}
+//const tokenExtractor = (request, response, next) => {
+//  const auth = request.get('authorization')
+//  request.token = auth && auth.startsWith('Bearer ')
+//    ? auth.replace('Bearer ', '')
+//    : null
+//  next()
+//}
+//
+//const userExtractor = async (request, response, next) => {
+//  const decodedToken = jwt.verify(request.token, process.env.SECRET)
+//  if(!decodedToken.id) return response.status(401).json({ error: 'invalid token' })
+//
+//  const user = await User.findById(decodedToken.id)
+//  if(!user) return response.status(400).json({ error: 'userId missing or not valid' })
+//  request.user = user
+//  next()
+//}
 
-const userExtractor = async (request, response, next) => {
-  const decodedToken = jwt.verify(request.token, process.env.SECRET)
-  if(!decodedToken.id) return response.status(401).json({ error: 'invalid token' })
-
-  const user = await User.findById(decodedToken.id)
-  if(!user) return response.status(400).json({ error: 'userId missing or not valid' })
-  request.user = user
-  next()
-}
-
-const middleware = { requestLogger, unKnownEndpoint, errorHandler, tokenExtractor, userExtractor }
+const middleware = { requestLogger, unKnownEndpoint, errorHandler, blogFinder }
 
 module.exports = middleware

@@ -1,8 +1,7 @@
 require('dotenv').config()
 
-const PORT = process.env.PORT
-const MONGODB_URI = process.env.NODE_ENV === 'test' ? process.env.TEST_MONGODB_URI : process.env.MONGODB_URI
-
-const envVariables = { PORT, MONGODB_URI }
-
-module.exports = envVariables
+module.exports = {
+    MONGODB_URI : process.env.NODE_ENV === 'test' ? process.env.TEST_MONGODB_URI : process.env.MONGODB_URI,
+    PORT : process.env.PORT || 3001,
+    DATABASE_URL: process.env.DATABASE_URL
+}
