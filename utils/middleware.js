@@ -37,6 +37,8 @@ const errorHandler = (error, request, response, next) => {
     return response.status(401).json({ error: 'invalid token' })
   }else if(error.name === 'TokenExpiredError'){
     return response.status(401).json({ error: 'token expired' })
+  }else if(error.name === 'SequelizeValidationError'){
+    return response.status(400).json({error: 'username must be a valid email address'})
   }
 
   next(error)
