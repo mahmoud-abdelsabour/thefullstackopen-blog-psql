@@ -83,16 +83,16 @@ blogsRouter.delete('/:id', tokenExtractor, blogFinder, async (request, response,
   }
 })
 
-blogsRouter.put('/:id',tokenExtractor, blogFinder, async (request, response, next) => {
+blogsRouter.put('/:id', blogFinder, async (request, response, next) => {
   try {
     const blog = request.blog
     if(!blog) return response.status(404).end()
 
-    const user = await User.findByPk(request.decodedToken.id)
+    //const user = await User.findByPk(request.decodedToken.id)
 
-    if (!user || blog.userId !== user.id) {
-      return response.status(403).json({ error: 'forbidden' })
-    }
+    //if (!user || blog.userId !== user.id) {
+    //  return response.status(403).json({ error: 'forbidden' })
+    //}
 
     blog.set(request.body)
     await blog.save()
