@@ -1,10 +1,13 @@
 const logger = require('./logger')
 const jwt = require('jsonwebtoken')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const { SECRET } = require('./config')
 
 const blogFinder = async (req, res, next) => {
-  req.blog = await Blog.findByPk(req.params.id)
+  req.blog = await Blog.findByPk(req.params.id, {
+    include: User
+  })
   if (!req.blog) {
     return res.status(404).end()
   }

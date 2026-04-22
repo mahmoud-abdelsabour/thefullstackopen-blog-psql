@@ -8,7 +8,11 @@ const User = require('../models/user')
 
 blogsRouter.get('/', async (request, response, next) => {
   try {
-    const blogs = await Blog.findAll({})
+    const blogs = await Blog.findAll({
+      include: {
+        model: User,
+      },
+    })
     response.json(blogs)
   } catch (error) {
     return next(error)
@@ -38,32 +42,42 @@ blogsRouter.post('/',tokenExtractor, async (request, response, next) => {
   }
 })
 
-blogsRouter.delete('/:id',blogFinder, async (request, response, next) => {
+blogsRouter.delete('/:id', tokenExtractor, blogFinder, async (request, response, next) => {
   try {
-    if (!request.blog) {
+
+    const blog = request.blog
+
+    if (!blog) {
       return response.status(404).json({ error: 'blog not found' })
     }
 
-    await request.blog.destroy()
+    const user = await User.findByPk(request.decodedToken.id)
+
+    if (!user || blog.userId !== user.id) {
+      return response.status(403).json({ error: 'forbidden' })
+    }
+
+    await blog.destroy()
     response.status(204).end()
   } catch (error) {
     return next(error)
   }
 })
 
-blogsRouter.put('/:id',blogFinder, async (request, response, next) => {
+blogsRouter.put('/:id',tokenExtractor, blogFinder, async (request, response, next) => {
   try {
-    const {title, author, url, likes} = request.body
+    const blog = request.blog
+    if(!blog) return response.status(404).end()
 
-    if(!request.blog) return response.status(404).end()
+    const user = await User.findByPk(request.decodedToken.id)
 
-    request.blog.title = title ? title : request.blog.title
-    request.blog.author = author ? author : request.blog.author
-    request.blog.url = url ? url : request.blog.url
-    request.blog.likes = likes ? likes : request.blog.likes
+    if (!user || blog.userId !== user.id) {
+      return response.status(403).json({ error: 'forbidden' })
+    }
 
-    const updatedBlog = await request.blog.save()
-    return response.status(200).json(updatedBlog)
+    blog.set(request.body)
+    await blog.save()
+    return response.status(200).json(blog)
   } catch (error) {
     return next(error)
   }
