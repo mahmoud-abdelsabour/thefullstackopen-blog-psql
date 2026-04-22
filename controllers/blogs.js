@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken')
 const { blogFinder, tokenExtractor } = require('../utils/middleware')
 const User = require('../models/user')
 const { Op } =  require('sequelize')
+const { sequelize } = require('../utils/db')
 //api/blogs
 
 blogsRouter.get('/', async (request, response, next) => {
@@ -28,7 +29,8 @@ blogsRouter.get('/', async (request, response, next) => {
       include: {
         model: User,
       },
-      where
+      where,
+      order: [['likes', 'DESC']]
     })
     response.json(blogs)
   } catch (error) {
