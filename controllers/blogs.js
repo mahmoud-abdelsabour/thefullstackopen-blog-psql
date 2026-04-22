@@ -10,9 +10,18 @@ blogsRouter.get('/', async (request, response, next) => {
   try {
     const where = {}
     if (request.query.search){
-      where.title = {
-        [Op.substring]: request.query.search
-      }
+      where[Op.or] = [
+        {
+          title: {
+            [Op.substring]: request.query.search
+          }
+        },
+        {
+          author: {
+            [Op.substring]: request.query.search
+          }
+        }
+      ]
     }
 
     const blogs = await Blog.findAll({
